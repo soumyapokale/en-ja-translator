@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 import re
 import torch
-from JapaneseTokenizer import JumanppWrapper
+from janome.tokenizer import Tokenizer
 from Lang import Lang
 
 
@@ -22,7 +22,11 @@ def normalize_ja(s, segmenter):
     """
     s = s.strip()
     s = re.sub(r"[^\w.!?。]+", r" ", s, flags=re.UNICODE)
-    s = " ".join(segmenter.tokenize(sentence=s, is_feature=False, is_surface=True).convert_list_object())
+    tokenized_list = []
+    for token in segmenter.tokenize(s):
+        tokenized_list.append(token.base_form)
+
+    s = " ".join(tokenized_list)
     s = re.sub("\s+", " ", s).strip()
     return s
 
@@ -30,15 +34,15 @@ def normalize_ja(s, segmenter):
 def normalize(en_lines, ja_lines):
     """ Process lists of both English and Japanese strings.
     """
-    segmenter = JumanppWrapper()
-    return [[normalize_en(l1), normalize_ja(l2, segmenter)] for l1, l2 in zip(en_lines, ja_lines)]
+    tokenizer = Tokenizer()
+    return [[normalize_en(l1), normalize_ja(l2, tokenizer)] for l1, l2 in zip(en_lines, ja_lines)]
 
 
 def read_langs(en_file, ja_file, n_processes=4):
     """ Reads corpuses and returns a Lang object for each language and all normalized sentence pairs.
     """
-    en_lines = open(en_file).read().split("\n")
-    ja_lines = open(ja_file).read().split("\n")
+    en_lines = open(en_file, encoding="utf8", errors="ignore").read().split("\n")
+    ja_lines = open(ja_file, encoding="utf8", errors="ignore").read().split("\n")
 
     pool = mp.Pool(processes=n_processes)
     interval = len(en_lines) // n_processes
