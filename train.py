@@ -132,7 +132,7 @@ if __name__ == "__main__":
         directions=c.DIRECTIONS,
         n_layers=c.LAYERS,
         dropout_p=c.DROPOUT)
-
+    print("Is use cuda:", c.use_cuda)
     if c.use_cuda:
         encoder = encoder.cuda()
         decoder = decoder.cuda()
